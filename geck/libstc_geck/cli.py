@@ -32,6 +32,7 @@ def exception_handler(func):
             )
             await self.geck.stop()
             raise
+
     return wrapper_func
 
 
@@ -60,10 +61,15 @@ class StcGeckCli:
         if self.geck.is_embed:
             print(f"{colored('INFO', 'green')}: Setting up indices...", file=sys.stderr)
         else:
-            print(f"{colored('INFO', 'green')}: Using existent instance on {self.geck.grpc_api_endpoint}", file=sys.stderr)
+            print(
+                f"{colored('INFO', 'green')}: Using existent instance on {self.geck.grpc_api_endpoint}",
+                file=sys.stderr,
+            )
 
     @exception_handler
-    async def documents(self, query_filter: Optional[dict] = None, fields: Optional[List[str]] = None):
+    async def documents(
+        self, query_filter: Optional[dict] = None, fields: Optional[List[str]] = None
+    ):
         """
         Stream all STC chunks.
 
@@ -92,7 +98,7 @@ class StcGeckCli:
         async with self.geck:
             results = await self._search(query)
             output_path, output_path_ext = os.path.splitext(output_path)
-            output_path_ext = output_path_ext.lstrip('.')
+            output_path_ext = output_path_ext.lstrip(".")
             if results:
                 document_holder = BaseDocumentHolder(results[0])
                 print(f"{colored('INFO', 'green')}: Found {query}", file=sys.stderr)
@@ -100,22 +106,33 @@ class StcGeckCli:
                     document_holder.get_links().get_first_link(output_path_ext)
                     or document_holder.get_links().get_first_link()
                 ):
-                    print(f"{colored('INFO', 'green')}: Receiving file {query}...", file=sys.stderr)
-                    if (real_extension := link.get('extension', 'pdf')) != output_path_ext:
+                    print(
+                        f"{colored('INFO', 'green')}: Receiving file {query}...",
+                        file=sys.stderr,
+                    )
+                    if (
+                        real_extension := link.get("extension", "pdf")
+                    ) != output_path_ext:
                         print(
                             f"{colored('WARN', 'yellow')}: Receiving file extension `{real_extension}` "
                             f"is not matching with your output path extension `{output_path_ext}`. Changed to correct one.",
-                            file=sys.stderr
+                            file=sys.stderr,
                         )
                         output_path_ext = real_extension
-                    data = await self.geck.download(link['cid'])
-                    final_file_name = output_path + '.' + output_path_ext
-                    with open(final_file_name, 'wb') as f:
+                    data = await self.geck.download(link["cid"])
+                    final_file_name = output_path + "." + output_path_ext
+                    with open(final_file_name, "wb") as f:
                         f.write(data)
                         f.close()
-                        print(f"{colored('INFO', 'green')}: File {final_file_name} is written", file=sys.stderr)
+                        print(
+                            f"{colored('INFO', 'green')}: File {final_file_name} is written",
+                            file=sys.stderr,
+                        )
                 else:
-                    print(f"{colored('ERROR', 'red')}: Not found CID for {query} and extension {output_path_ext}", file=sys.stderr)
+                    print(
+                        f"{colored('ERROR', 'red')}: Not found CID for {query} and extension {output_path_ext}",
+                        file=sys.stderr,
+                    )
             else:
                 print(f"{colored('ERROR', 'red')}: Not found {query}", file=sys.stderr)
 
@@ -137,13 +154,13 @@ class StcGeckCli:
             return await geck.random_cids(n=n)
 
     async def _search(self, query: str, limit: int = 1, offset: int = 0):
-        logging.getLogger('statbox').info({'action': 'search', 'query': query})
+        logging.getLogger("statbox").info({"action": "search", "query": query})
         summa_client = self.geck.get_summa_client()
         search_request = {
-            'index_alias': self.index_alias,
-            'query': {'match': {'value': query.lower()}},
-            'collectors': [{'top_docs': {'limit': limit, 'offset': offset}}],
-            'is_fieldnorms_scoring_enabled': False,
+            "index_alias": self.index_alias,
+            "query": {"match": {"value": query.lower()}},
+            "collectors": [{"top_docs": {"limit": limit, "offset": offset}}],
+            "is_fieldnorms_scoring_enabled": False,
         }
         return await summa_client.search_documents(search_request)
 
@@ -171,7 +188,10 @@ class StcGeckCli:
         """
         self.prompt()
         async with self.geck:
-            print(f"{colored('INFO', 'green')}: Serving on {self.grpc_api_endpoint}", file=sys.stderr)
+            print(
+                f"{colored('INFO', 'green')}: Serving on {self.grpc_api_endpoint}",
+                file=sys.stderr,
+            )
             while True:
                 await asyncio.sleep(5)
 
@@ -181,7 +201,7 @@ class StcGeckCli:
         output_car: str,
         query: str = None,
         limit: int = 100,
-        name_template: str = '{id}.{extension}',
+        name_template: str = "{id}.{extension}",
     ):
         """
         Stream all STC chunks.
@@ -190,15 +210,17 @@ class StcGeckCli:
         """
         self.prompt()
         async with self.geck as geck:
-            return await geck.create_ipfs_directory(output_car, query, limit, name_template)
+            return await geck.create_ipfs_directory(
+                output_car, query, limit, name_template
+            )
 
 
 async def stc_geck_cli(
-    ipfs_http_base_url: str = 'http://127.0.0.1:8080',
-    ipfs_api_base_url: str = 'http://127.0.0.1:5001',
-    ipfs_data_directory: str = '/ipns/libstc.cc/data',
-    grpc_api_endpoint: str = '127.0.0.1:10082',
-    index_alias: str = 'stc',
+    ipfs_http_base_url: str = "http://127.0.0.1:8080",
+    ipfs_api_base_url: str = "http://127.0.0.1:5001",
+    ipfs_data_directory: str = "/ipns/libstc.cc/data",
+    grpc_api_endpoint: str = "127.0.0.1:10082",
+    index_alias: str = "stc",
     timeout: int = 120,
     debug: bool = False,
 ):
@@ -212,7 +234,9 @@ async def stc_geck_cli(
     :param debug: add debugging output
     :return:
     """
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO if debug else logging.ERROR)
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO if debug else logging.ERROR
+    )
     stc_geck_client = StcGeckCli(
         ipfs_http_base_url=ipfs_http_base_url,
         ipfs_api_base_url=ipfs_api_base_url,
@@ -222,18 +246,18 @@ async def stc_geck_cli(
         timeout=timeout,
     )
     return {
-        'create-ipfs-directory': stc_geck_client.create_ipfs_directory,
-        'documents': stc_geck_client.documents,
-        'download': stc_geck_client.download,
-        'random-cids': stc_geck_client.random_cids,
-        'search': stc_geck_client.search,
-        'serve': stc_geck_client.serve,
+        "create-ipfs-directory": stc_geck_client.create_ipfs_directory,
+        "documents": stc_geck_client.documents,
+        "download": stc_geck_client.download,
+        "random-cids": stc_geck_client.random_cids,
+        "search": stc_geck_client.search,
+        "serve": stc_geck_client.serve,
     }
 
 
 def main():
-    fire.Fire(stc_geck_cli, name='geck')
+    fire.Fire(stc_geck_cli, name="geck")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
