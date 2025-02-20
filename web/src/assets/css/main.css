@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .base-text-color {
+    @apply text-gray-900 dark:text-gray-300;
+  }
+
+  .secondary-text-color {
+      @apply text-gray-600 dark:text-gray-500;
+  }
+
+  .custom-md h2 {
+    @apply custom-header text-xl
+  }
+
+  .custom-md h3 {
+    @apply custom-header text-lg
+  }
+
+  .custom-bg-main {
+    @apply bg-white dark:bg-gray-900;
+  }
+
+  .custom-header {
+    @apply font-bold text-indigo-600 dark:text-amber-600;
+  }
+
+  .custom-svg {
+    @apply fill-indigo-600 dark:fill-amber-600;
+  }
+
+  .custom-icon {
+    @apply hover:text-indigo-600 dark:hover:text-amber-600 md:hover:text-indigo-600 md:dark:hover:text-amber-600;
+  }
+
+  .custom-dropdown-item {
+    @apply text-indigo-600 dark:text-amber-600 hover:text-indigo-500 dark:hover:text-amber-500 md:hover:text-indigo-500 md:dark:hover:text-amber-500;
+  }
+
+  .custom-loading-spinner {
+    @apply flex justify-center max-w-lg flex-col mx-auto mt-32
+  }
+
+  .custom-link, .custom-link-container a {
+    @apply text-indigo-600 dark:text-amber-600 hover:text-indigo-500 hover:dark:text-amber-500
+  }
+
+  .custom-separator {
+    @apply h-px my-4 bg-gray-200 border-0 dark:bg-gray-700;
+  }
+
+  .custom-border-color {
+    @apply border-gray-500 focus:border-black dark:focus:border-white;
+  }
+
+  .custom-border-secondary-color {
+    @apply border-gray-300 dark:border-gray-700 focus:border-gray-900 dark:focus:border-gray-100;
+  }
+
+  .custom-input-box {
+    @apply text-gray-900 placeholder-gray-500 dark:placeholder-gray-600 dark:text-white;
+  }
+
+  .custom-button-group > .custom-button {
+    @apply border;
+  }
+
+  .custom-button-group > .custom-button:first-child {
+    @apply rounded-s;
+  }
+
+  .custom-button-group > .custom-button:last-child {
+    @apply rounded-e;
+  }
+}
+
+select {
+  @apply appearance-none p-2.5;
+  background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="black" width="24px" height="24px" viewBox="0 0 24 24" xml:space="preserve"><path d="M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z"/><path fill="none" d="M0,0h24v24H0V0z"/></svg>');
+  background-position: right .5em top 50%;
+  background-repeat: no-repeat;
+}
+@media (prefers-color-scheme: dark) {
+  select {
+    @apply appearance-none p-2.5;
+    background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="grey" width="24px" height="24px" viewBox="0 0 24 24" xml:space="preserve"><path d="M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z"/><path fill="none" d="M0,0h24v24H0V0z"/></svg>');
+    background-position: right .5em top 50%;
+    background-repeat: no-repeat;
+  }
+}
+
+mjx-container > svg {
+  display: inline;
+}
+
+.inversion-filter {}
+@media (prefers-color-scheme: dark) {
+  .inversion-filter {
+     filter: invert(100%) hue-rotate(180deg);
+  }
+}
+
+.favicon-inversion-filter {
+  filter: invert(29%) sepia(15%) saturate(2317%) hue-rotate(222deg) brightness(100%) contrast(90%)
+}
+@media (prefers-color-scheme: dark) {
+  .favicon-inversion-filter {
+     filter: invert(78%) sepia(78%) saturate(4236%) hue-rotate(356deg) brightness(103%) contrast(99%);
+  }
+}
+
+.content-view {
+  word-break: break-word !important;
+}
+
+.content-view header { @apply text-xl; }
+.content-view section header { @apply font-bold; }
+
+.content-view .infobox {
+  font-family: sans-serif;
+  max-width: 320px;
+  float: right !important;
+  clear: right !important;
+  background-color: rgb(44, 50, 56) !important;
+  border: 1px solid #a2a9b1 !important;
+  border-spacing: 3px !important;
+  margin: 0.5em 0 0.5em 1em;
+  padding: 0.2em;
+  line-height: 1.5em;
+  width: 100%;
+  @apply text-sm;
+  @apply m-2;
+}
+
+.content-view .wikitable {
+  margin: 1em 0;
+  border: 1px solid #a2a9b1;
+  border-collapse: collapse;
+}
+
+.content-view .wikitable > tr > th, .wikitable > * > tr > th {
+    text-align: center;
+}
+
+.content-view .wikitable > tr > th, .wikitable > tr > td, .wikitable > * > tr > th, .wikitable > * > tr > td {
+    border: 1px solid #a2a9b1;
+    padding: 0.2em 0.4em;
+}
+
+.content-view .infobox > tbody {
+  font-family: sans-serif;
+  border-spacing: 3px;
+  line-height: 1.5em;
+  display: flex !important;
+  flex-flow: column nowrap !important;
+  @apply m-2;
+}
+
+
+.content-view .infobox > tbody table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  display: inline-table;
+}
+
+.content-view .reflist {
+  @apply text-sm;
+}
+.content-view .refbegin {
+  @apply text-sm;
+}
+
+.content-view details > summary {
+  list-style: none;
+}
+.content-view details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.content-view .tright {
+  float: right !important;
+  clear: right !important;
+  margin: 14px 0 14px 14px;
+}
+
+.content-view .tleft {
+  float: left !important;
+  clear: left !important;
+  margin: 14px 14px 14px 0;
+}
+
+.content-view .thumb {
+  max-width: 704px;
+
+  box-sizing: content-box;
+  display: block !important;
+  position: static;
+  text-align: center !important;
+}
+
+.content-view .thumb .thumbinner {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.content-view .thumbcaption {
+  margin: 0.5em 0 0;
+  padding: 0 !important;
+  width: auto !important;
+  font-size: 0.8em;
+  line-height: 1.5;
+  @apply text-sm;
+}
+
+.content-view .trow {
+  display: flex !important;
+}
+
+.content-view .hatnote {
+  @apply text-sm;
+  @apply m-2;
+}
