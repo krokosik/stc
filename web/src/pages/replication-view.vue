@@ -24,10 +24,10 @@
       <tbody>
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-          Web-interface and search database
+          Web-interface
         </th>
         <td class="px-6 py-4 break-all font-mono">
-          ipfs pin add /ipns/libstc.cc
+          ipfs pin add /ipns/libstc.cc/web && ipfs pin add --recursive=false /ipns/libstc.cc
         </td>
       </tr>
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -35,7 +35,7 @@
           Directory with DOI-named files
         </th>
         <td class="px-6 py-4 break-all font-mono">
-          ipfs pin add /ipns/dois.libstc.cc
+          ipfs pin add /ipns/libstc.cc/dois
         </td>
       </tr>
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -43,7 +43,7 @@
           Directory with Nexus ID named files
         </th>
         <td class="px-6 py-4 break-all font-mono">
-          ipfs pin add /ipns/repo.libstc.cc
+          ipfs pin add /ipns/libstc.cc/repo
         </td>
       </tr>
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -134,20 +134,6 @@ http {
       proxy_pass http://127.0.0.1:8080;
       proxy_set_header Host libstc.cc.ipns.your-gateway.org;
     }
-
-    # Following location is used for configuring on how to process file requests.
-    # Option 1: Forward to upstream which redirects to IPFS through a chain of public hosts.
-    # Requires nothing from STC replicator but may be disrupted by public hosts used in the chain of redirection.
-    location ~* /repo {
-      proxy_pass http://127.0.0.1:8080;
-      proxy_set_header Host libstc.cc.ipns.your-gateway.org;
-    }
-
-    # Option 2: Serve requests through your own IPFS instance.
-    # location ~ ^/repo/(?<name>[^/]+)/ {
-    #   proxy_pass http://127.0.0.1:8080/$name;
-    #   proxy_set_header Host repo-libstc-cc.ipns.your-gateway.org;
-    # }
   }
 }`
 

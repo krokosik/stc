@@ -21,8 +21,6 @@
   <p>The STC is a self-replicating search engine that grants sentient beings free and convenient access to knowledge discovered by the human race throughout its age of science and digital era.</p>
   <p>Founded in 2021 year (Terra Time, Gregorian Calendar), the STC relies upon <a class="custom-link" href="https://github.com/izihawa/summa">Summa</a>, <a class="custom-link" href="https://webassembly.org/">WASM</a> and <a class="custom-link" href="https://ipfs.io/">IPFS</a> for its operation.</p>
   <p>The STC is a pure peer-to-peer system without a centralized server. Queries made through the platform remain within the user's browser and/or distributed across semi-random peers.</p>
-  <hr class="custom-separator"/>
-
   <h4 class="text-xl custom-header mt-4">Access to STC</h4>
   <p>The STC is distributed through IPFS, an uncensorable distributed network. When using STC, you download portions of the library from multiple peers to your local computer for offline use.</p>
   <p>You may have accessed this page through the public gateway. While this method is convenient, it's not always reliable because public gateways can potentially censor this site.</p>
