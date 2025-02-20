@@ -1,9 +1,8 @@
-import json
 import logging
 import re
 import tempfile
-from typing import AsyncIterator, Optional
-from urllib.parse import quote, urlparse
+from typing import AsyncIterator
+from urllib.parse import urlparse
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -11,12 +10,11 @@ import orjson
 import summa_embed
 from aiokit import AioThing
 from aiosumma import SummaClient
-from izihawa_ipfs_api import IpfsApiClient, IpfsHttpClient
-from izihawa_utils.random import reservoir_sampling_async
+from izihawa_ipfs_api import IpfsHttpClient
 
-from .advices import BaseDocumentHolder, default_field_aliases, default_field_boosts
+from .advices import default_field_aliases, default_field_boosts
 from .exceptions import IpfsConnectionError
-from .utils import create_car, is_endpoint_listening
+from .utils import is_endpoint_listening
 
 
 def get_config():
@@ -25,8 +23,9 @@ def get_config():
         "api": {
             "http_endpoint": None,
             "max_frame_size_bytes": 2147483648,
-            "concurrency_limit": 4,
-            "buffer": 8,
+            "keep_alive_timeout_seconds": 60,
+            "max_connection_age_seconds": 300,
+            "max_connection_age_grace_seconds": 600,
         },
         "consumers": {},
         "core": {
@@ -80,7 +79,6 @@ class StcGeck(AioThing):
     def __init__(
         self,
         ipfs_http_base_url: str = "http://127.0.0.1:8080",
-        ipfs_api_base_url: str = "http://127.0.0.1:5001",
         ipfs_data_directory: str = "/ipns/libstc.cc/data",
         grpc_api_endpoint: str = "127.0.0.1:10082",
         index_alias: str = "stc",
@@ -103,10 +101,6 @@ class StcGeck(AioThing):
         self.ipfs_http_base_url = canonoize_base_url(ipfs_http_base_url)
         self.ipfs_http_client = IpfsHttpClient(self.ipfs_http_base_url, timeout=timeout)
         self.starts.append(self.ipfs_http_client)
-        self.ipfs_api_client = IpfsApiClient(
-            canonoize_base_url(ipfs_api_base_url), timeout=timeout
-        )
-        self.starts.append(self.ipfs_api_client)
         self.ipfs_data_directory = "/" + ipfs_data_directory.strip("/") + "/"
         self.grpc_api_endpoint = grpc_api_endpoint
         self.index_alias = index_alias
@@ -153,13 +147,12 @@ class StcGeck(AioThing):
                 raise IpfsConnectionError(base_error=e)
             server_config["core"]["indices"][self.index_alias] = {
                 "query_parser_config": {
-                    "default_fields": ["abstract", "title"],
-                    "term_limit": 20,
+                    "default_fields": ["all"],
+                    "term_limit": 10,
                     "field_aliases": default_field_aliases,
                     "field_boosts": default_field_boosts,
                 },
                 "config": remote_index_config,
-                "field_triggers": {},
             }
             self.summa_embed_server = summa_embed.SummaEmbedServerBin(server_config)
             await self.summa_embed_server.start()
@@ -185,7 +178,7 @@ class StcGeck(AioThing):
         """
         return self.summa_client
 
-    async def download(self, cid: str):
+    async def download(self, id_: str, extension: str = "pdf"):
         """
         Download item by its IPFS CID
 
@@ -193,120 +186,11 @@ class StcGeck(AioThing):
         :return: `bytes` with the file content
         """
         try:
-            return await self.ipfs_http_client.get_item(cid)
+            return await self.ipfs_http_client.get(
+                f"/ipns/repo.libstc.cc/{id_}.{extension}"
+            )
         except (
             aiohttp.client_exceptions.ClientConnectorError,
             ConnectionRefusedError,
         ) as e:
             raise IpfsConnectionError(base_error=e)
-
-    async def download_document(self, document: dict, file_name: Optional[str] = None):
-        """
-        Download document
-
-        :param document: JSON document from STC
-        :param file_name: Filename for storing file
-        :return: True if file has been successfully written
-        """
-        document_holder = BaseDocumentHolder(document)
-        link = document_holder.get_links().get_first_link()
-        if link:
-            if not file_name:
-                file_name = (
-                    quote(document_holder.get_external_id(), safe="")
-                    + "."
-                    + link["extension"]
-                )
-            with open(file_name, "wb") as f:
-                pdf_file = await self.download(link["cid"])
-                f.write(pdf_file)
-            return True
-        return False
-
-    async def random_cids(self, n: int = 1000):
-        """
-        Returns random CIDs from STC dataset. May be helpful for pinning random subsets of STC.
-
-        :param n: the number of Random CIDs
-        :return:
-        """
-        items = await reservoir_sampling_async(
-            async_iterator=trace_iteration(
-                self.ipfs_api_client.ls_stream(
-                    "/ipns/hub.standard-template-construct.org",
-                    size=False,
-                    resolve_type=False,
-                ),
-                10000,
-                action="trace_listing_items",
-            ),
-            n=n,
-        )
-        cids = []
-        for item in items:
-            item = json.loads(item)
-            link = item["Objects"][0]["Links"][0]
-            cids.append(link["Hash"])
-        return cids
-
-    async def create_ipfs_directory(
-        self,
-        output_car: str,
-        query: Optional[str] = None,
-        limit: int = 100,
-        name_template: str = "{id}.{extension}",
-    ) -> str:
-        """
-        Creates an importable CAR file with items from STC.
-
-        :param output_car: filename of the output CAR
-        :param query: query to narrow down storing items
-        :param limit: how many items will be stored
-        :param name_template: template that will be used for naming items inside CAR
-        :return: the root CID that you can use for addressing directory after importing CAR to IPFS daemon
-        """
-        if query and self.is_embed:
-            logging.getLogger("warning").warning("Too high limit for embedded Summa")
-        if query:
-            return await create_car(
-                output_car,
-                query_wrapper(
-                    await self.summa_client.search(
-                        {
-                            "index_alias": self.index_alias,
-                            "collectors": [
-                                {
-                                    "top_docs": {
-                                        "limit": limit,
-                                        "scorer": {"order_by": "issued_at"},
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "boolean": {
-                                    "subqueries": [
-                                        {
-                                            "occur": "must",
-                                            "query": {"match": {"value": query}},
-                                        },
-                                        {
-                                            "occur": "must",
-                                            "query": {"exists": {"field": "cid"}},
-                                        },
-                                    ]
-                                }
-                            },
-                            "is_fieldnorms_scoring_enabled": False,
-                        }
-                    )
-                ),
-                limit=limit,
-                name_template=name_template,
-            )
-        else:
-            return await create_car(
-                output_car,
-                load_document(self.summa_client.documents(self.index_alias)),
-                limit=limit,
-                name_template=name_template,
-            )

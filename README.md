@@ -10,7 +10,7 @@ You've arrived at the repository for [STC](https://libstc.cc), the library, sear
 ## Getting Started
 
 - Explore our search features at [Web STC](https://libstc.cc), or through one of the Telegram bots listed in the bio of our [channel](https://t.me/nexus_search) (not an ad, just a safety)
-- [Discover](/replication) how to set up your own STC instance, enabling you to enjoy the same search capabilities in your local environment
+- [Discover](https://libstc.cc/#/help/replication) how to set up your own STC instance, enabling you to enjoy the same search capabilities in your local environment
 - Learn about [how to access large corpus](/geck) of high-quality scholarly texts using Python
 
 ## Details
