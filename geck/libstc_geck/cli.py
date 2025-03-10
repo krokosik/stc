@@ -48,7 +48,6 @@ class StcGeckCli:
     ):
         self.geck = StcGeck(
             ipfs_http_base_url=ipfs_http_base_url,
-            ipfs_api_base_url=ipfs_api_base_url,
             ipfs_data_directory=ipfs_data_directory,
             grpc_api_endpoint=grpc_api_endpoint,
             index_alias=index_alias,
